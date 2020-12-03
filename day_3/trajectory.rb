@@ -53,17 +53,28 @@ class Spot
   attr_reader :value
 end
 
-def count_trees_in_traversal(grid)
+def count_trees_in_traversal(grid, x_increment, y_increment)
   x = 0
   y = 0
   trees = 0
 
   until grid.invalid_spot?(x, y)
     trees += 1 if grid[x, y].obstacle?
-    x += 3
-    y += 1
+    x += x_increment
+    y += y_increment
   end
   trees
+end
+
+def count_trees_in_several_traversals(grid)
+  traversals = [
+    [1, 1],
+    [3, 1],
+    [5, 1],
+    [7, 1],
+    [1, 2],
+  ]
+  traversals.map { |path| count_trees_in_traversal(grid, *path) }.inject(&:*)
 end
 
 if __FILE__ == $PROGRAM_NAME
@@ -73,5 +84,6 @@ if __FILE__ == $PROGRAM_NAME
   end
   grid = Grid.populate_grid(formatted)
 
-  puts "Trees in traversal: #{count_trees_in_traversal(grid)}"
+  puts "Trees in traversal: #{count_trees_in_traversal(grid, 3, 1)}"
+  puts "Product of trees in several paths: #{count_trees_in_several_traversals(grid)}"
 end
