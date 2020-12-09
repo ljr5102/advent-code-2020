@@ -21,9 +21,25 @@ def find_first_nonsum(input)
   end
 end
 
+def find_contiguous_range_sum(input, number)
+  start_idx = 0
+  end_idx = 0
+  until start_idx == input.length
+    sum = input[start_idx..end_idx].sum
+    if sum < number
+      end_idx += 1
+    elsif sum > number
+      start_idx += 1
+    elsif sum == number
+      return (start_idx..end_idx)
+    end
+  end
+end
 
 if __FILE__ == $PROGRAM_NAME
   input = File.readlines("./input.txt").map(&:to_i)
   value = find_first_nonsum(input)
+  range = find_contiguous_range_sum(input, value)
   puts "The first number to not be a sum of the previous 25 is #{value}"
+  puts "The sum of the first and last value from the valid range is #{input[range].min + input[range].max}"
 end
