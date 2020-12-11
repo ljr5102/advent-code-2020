@@ -1,4 +1,3 @@
-require "byebug"
 def valid_connection(input, jolt_input)
   return nil if jolt_input > input.max
   from_input = potential_connections(input, jolt_input).min
@@ -25,6 +24,28 @@ def diff_plot(input, jolt_input)
 end
 
 def distinct_connections(input)
+  input = input.sort
+  maxs = [{ max: 0, streams: 1 }]
+  current = nil
+  loop do
+    current = maxs.shift
+    pot_conns = potential_connections(input, current[:max])
+    break if pot_conns.empty?
+    if maxs.empty?
+      maxs = pot_conns.map { |conn| { max: conn, streams: current[:streams] } }
+    else
+      new_maxs = pot_conns.map do |conn|
+        curr_max = maxs.find { |x| x[:max] == conn }
+        if curr_max
+          { max: curr_max[:max], streams: curr_max[:streams] + current[:streams] }
+        else
+          { max: conn, streams: current[:streams] }
+        end
+      end
+      maxs = new_maxs
+    end
+  end
+  current
 end
 
 def potential_connections(input, jolt_input)
@@ -37,6 +58,8 @@ if __FILE__ == $PROGRAM_NAME
 
   num_1_diffs = plot.find { |x| x[:diff] == 1 }[:count]
   num_3_diffs = plot.find { |x| x[:diff] == 3 }[:count]
+  distinct = distinct_connections(input)
 
   puts "There are #{num_1_diffs} differences of 1 and #{num_3_diffs} differences of 3 for a product of #{num_1_diffs * num_3_diffs}"
+  puts "There are #{distinct[:streams]} number of arrangements possible."
 end
