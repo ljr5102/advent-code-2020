@@ -1,4 +1,3 @@
-require "byebug"
 class Grid
   def self.setup(input)
     grid = input.map.with_index do |el, first_idx|
@@ -43,6 +42,21 @@ class GridPosition
     NEIGHBOR_INCREMENTS.map do |pos|
       grid[position.first + pos.first, position.last + pos.last]
     end.compact
+  end
+
+  def extended_neighbors(grid)
+    all = []
+    NEIGHBOR_INCREMENTS.each do |(first_inc, second_inc)|
+      neighb_idx = [position.first + first_inc, position.last + second_inc]
+      neighb = grid[*neighb_idx]
+      until neighb.nil?
+        all << neighb if neighb.seat?
+        break if neighb.seat?
+        neighb_idx = [neighb_idx.first + first_inc, neighb_idx.last + second_inc]
+        neighb = grid[*neighb_idx]
+      end
+    end
+    all
   end
 
   def occupied?
@@ -139,9 +153,44 @@ class Round
   attr_reader :grid
 end
 
+class ExtendedRound
+  def initialize(grid)
+    @grid = grid
+  end
+
+  def cycle_to_stable
+    prev_round = grid.grid.flatten.map(&:to_s).join("")
+    curr_round = nil
+    until prev_round == curr_round
+      cycle_once
+      prev_round = curr_round
+      curr_round = grid.grid.flatten.map(&:to_s).join("")
+
+    end
+  end
+
+  def cycle_once
+    grid.grid.flatten.select(&:seat?).each do |seat|
+      if seat.occupied?
+        seat.mark_to_flip if seat.extended_neighbors(grid).count(&:occupied?) >= 5
+      else
+        seat.mark_to_flip if seat.extended_neighbors(grid).count(&:occupied?).zero?
+      end
+    end
+    grid.grid.flatten.each(&:flip)
+  end
+
+  attr_reader :grid
+end
+
 if __FILE__ == $PROGRAM_NAME
   input = File.readlines("./input.txt").map(&:strip)
+
   grid = Grid.setup(input)
   Round.new(grid).cycle_to_stable
+  puts "After cycling to stabilization, there are #{grid.grid.flatten.count(&:occupied?)} seats occupied."
+
+  grid = Grid.setup(input)
+  ExtendedRound.new(grid).cycle_to_stable
   puts "After cycling to stabilization, there are #{grid.grid.flatten.count(&:occupied?)} seats occupied."
 end
