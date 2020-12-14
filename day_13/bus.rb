@@ -28,6 +28,9 @@ def find_departure_bus(start_time, buses)
 end
 
 def find_time_of_subsequent_departures(buses)
+  # brute force solution is waaaay too slow
+  # this solution inspired by CRT and helpful answer on using it here:
+  # https://math.stackexchange.com/questions/2442407/find-number-in-a-certain-range-satisfying-three-modulus-requirements/2442417#2442417
   stuff =buses.map do |bus|
     desired_mod = (bus.id - bus.depart_after_increment) % bus.id
     adder = bus.id
