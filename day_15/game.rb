@@ -1,4 +1,4 @@
-def final_num(input)
+def final_num(final, input)
   result_map = {}
   current_num = nil
   spot = nil
@@ -8,7 +8,7 @@ def final_num(input)
     result_map[current_num] = { val: current_num, most_recent: spot, previous: nil, times: 1 }
   end
 
-  until spot == 2020
+  until spot == final
     mapped_num = result_map[current_num]
     spot += 1
     if mapped_num && mapped_num[:times] > 1
@@ -30,8 +30,10 @@ def final_num(input)
 end
 
 if __FILE__ == $PROGRAM_NAME
-  input = [16,11,15,0,1,7]
-  final = final_num(input)
+  input = [16, 11 ,15 ,0 ,1 ,7]
+  final_2020 = final_num(2020, input)
+  final_30_000_000 = final_num(30_000_000, input)
 
-  puts "The 2020th number in the game is: #{final}"
+  puts "The 2020th number in the game is: #{final_2020}"
+  puts "The 30_000_000th number in the game is #{final_30_000_000}"
 end

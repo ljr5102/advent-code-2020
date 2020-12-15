@@ -1,7 +1,8 @@
 require "./day_15/game"
 
 describe "#final_num" do
-  subject { final_num(input) }
+  subject { final_num(final, input) }
+  let(:final) { 2020 }
 
   TEST_1_CONFIG = [
     { input: [0, 3, 6], output: 436 },
