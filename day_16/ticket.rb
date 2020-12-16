@@ -1,5 +1,6 @@
-require "byebug"
 class TicketField
+  attr_reader :name
+
   def initialize(name, ranges)
     @name = name
     @ranges = ranges
@@ -48,6 +49,41 @@ class TicketScanner
       end
       invalid_vals.sum
     end
+  end
+
+  def ordered_fields(tickets)
+    valid_tickets = tickets.reject do |ticket|
+      ticket.any? do |num|
+        fields.none? { |field| field.valid?(num) }
+      end
+    end
+
+    potential_fields = {}
+
+    fields.length.times do |idx|
+      idx_vals = valid_tickets.map { |ticket| ticket[idx] }
+      idx_fields = fields.select do |field|
+        idx_vals.all? { |val| field.valid?(val) }
+      end
+      if idx_fields.empty?
+        raise "hell"
+      end
+      potential_fields[idx] = idx_fields.map(&:name)
+    end
+
+    ordered = {}
+
+    until ordered.keys.length == potential_fields.keys.length
+      potential_fields.keys.each do |idx|
+        if potential_fields[idx].length == 1
+          ordered[idx] = potential_fields[idx].first
+          potential_fields.values.each { |val| val.delete_if { |el| el == ordered[idx] } }
+        end
+      end
+    end
+
+    ordered
+
   end
 
   attr_reader :fields
@@ -106,11 +142,15 @@ if __FILE__ == $PROGRAM_NAME
   parser.parse
 
   ticket_fields = parser.ticket_fields
-  your_ticket = parser.your_ticket
+  your_ticket = parser.your_ticket.first
   nearby_tickets = parser.nearby_tickets
 
   scanner = TicketScanner.new(ticket_fields)
   error_rate = scanner.error_rate(nearby_tickets)
+  ordered = scanner.ordered_fields(nearby_tickets)
+  departure_field_indexes = ordered.keys.select { |key| ordered[key].to_s.start_with?("departure_") }
+  departure_product = departure_field_indexes.inject(1) { |acc, el| acc * your_ticket[el] }
 
   puts "The error rate for nearby tickets is #{error_rate}"
+  puts "The product of the departure fields on your ticket is #{departure_product}"
 end

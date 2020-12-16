@@ -104,6 +104,33 @@ describe TicketScanner do
 
     it { is_expected.to eq(5) }
   end
+
+  describe "#ordered_fields" do
+    subject { scanner.ordered_fields(tickets) }
+
+    let(:fields) { [field_two, field_three, field_one] }
+    let(:field_one) { instance_double(TicketField, valid?: false, name: :field_one) }
+    let(:field_two) { instance_double(TicketField, valid?: false, name: :field_two) }
+    let(:field_three) { instance_double(TicketField, valid?: false, name: :field_three) }
+
+    before do
+      allow(field_one).to receive(:valid?).with(1).and_return(true)
+      allow(field_two).to receive(:valid?).with(5).and_return(true)
+      allow(field_three).to receive(:valid?).with(9).and_return(true)
+    end
+
+    context "all tickets valid" do
+      let(:tickets) { [[1, 5, 9], [1, 5, 9]] }
+
+      it { is_expected.to eq({ 0 => field_one, 1 => field_two, 2 => field_three }) }
+    end
+
+    context "not all tickets valid" do
+      let(:tickets) { [[1, 5, 9], [7, 5, 9], [1, 5, 9], [1, 5, 10], [1, 10, 9]] }
+
+      it { is_expected.to eq({ 0 => field_one, 1 => field_two, 2 => field_three }) }
+    end
+  end
 end
 
 describe TicketParser do
